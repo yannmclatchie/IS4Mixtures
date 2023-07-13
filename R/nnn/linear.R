@@ -79,7 +79,7 @@ res_df <- bind_rows(N1_proposal_res,
 res_df
 
 # plot the proposal performances on linear target
-p_proposal_metrics <- res_df |> dplyr::select(proposal, bias, var, ess) |>
+p_proposal_metrics <- res_df |> dplyr::select(proposal, var, ess) |>
   group_by(proposal) |>
   reshape2::melt(id.vars = "proposal", variable.name = "metric") |>
   group_by(proposal, metric) |>
@@ -97,5 +97,5 @@ p_proposal_metrics <- res_df |> dplyr::select(proposal, bias, var, ess) |>
   xlab(NULL) +
   theme(axis.text.x = element_text(angle = 45, hjust=1))
 p_proposal_metrics
-#save_tikz_plot(p_proposal_metrics, width = 4, 
-#               filename = "./tex/linear-nnn-proposals.tex")
+save_tikz_plot(p_proposal_metrics, width = 4, 
+               filename = "./tex/linear-nnn-proposals.tex")

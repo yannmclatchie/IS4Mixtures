@@ -68,7 +68,7 @@ proposal_metrics <- function(proposal_name, functional, I.quad,
   ess <- ess_IS(ws)
   mean <-  sum(fs * ws)
   var <- sum(ws^2 * (fs - mean)^2)
-  bias <- I.quad - mean
+  error <- I.quad - mean
   # compute the quartiles corresponding to the level
   D <- qnorm(p = (1 + level) / 2)
   d <- D * sqrt(var)
@@ -76,7 +76,7 @@ proposal_metrics <- function(proposal_name, functional, I.quad,
   list(proposal = proposal_name,
        est = mean,
        var = var,
-       bias = bias,
+       error = error,
        lwr = mean - d,
        upr = mean + d,
        ess = ess)
