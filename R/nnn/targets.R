@@ -11,6 +11,9 @@ linear_dens <- function(x, weights, lZ) {
   ldens <- linear_log_kernel(x = x, weights = weights) - lZ
   return(exp(ldens))
 }
+linear_target <- list(kernel = linear_kernel,
+                      log_kernel = linear_log_kernel,
+                      dens = linear_dens)
 
 # log-linear stacking
 locking_log_kernel <- function(x, weights) {
