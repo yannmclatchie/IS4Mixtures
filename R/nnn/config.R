@@ -1,5 +1,6 @@
-# set the seed
+# set the seed for reproducibility
 SEED <- 1234
+set.seed(SEED)
 
 # define the number of draws (use default Stan)
 num_draws <- 4e3
@@ -14,9 +15,9 @@ sigma_2 <- 3
 sigma_3 <- 1
 
 # define the combination weights
-w1 <- 0.85#0.65
+w1 <- 0.85
 w2 <- 0.05
-w3 <- 0.1#0.3
+w3 <- 0.1
 w1 + w2 + w3
 
 # build weights list

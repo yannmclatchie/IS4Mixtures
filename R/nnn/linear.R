@@ -17,9 +17,9 @@ lZ <- log(Z$value)
 # define some functional to estimate
 functional <- function(x) sin(x) * cos(x)
 functional <- Vectorize(functional)
-I.quad <- integrate(function(x)
-  functional(x) * target_dens(x, weights = weights, lZ = lZ),
-  -Inf, Inf) 
+I.quad <- integrate(function(x){
+  functional(x) * target_dens(x, weights = weights, lZ = lZ)},
+  -Inf, Inf, rel.tol = 1e-15) 
 I.quad$value # should be zero since functional is odd
 
 # plot the (known) target and the component models
@@ -78,24 +78,37 @@ res_df <- bind_rows(N1_proposal_res,
                     aware_proposal_res)
 res_df
 
+# custom labeller
+metric_names <- c(
+  `var` = "Variance",
+  `ess` = "ESS",
+  `squared_error` = "Squared error"
+)
+
 # plot the proposal performances on linear target
-p_proposal_metrics <- res_df |> dplyr::select(proposal, var, ess) |>
-  group_by(proposal) |>
-  reshape2::melt(id.vars = "proposal", variable.name = "metric") |>
-  group_by(proposal, metric) |>
+p_proposal_metrics <- res_df |> dplyr::select(proposal, snis, error, var, ess) |>
+  mutate(squared_error = error^2) |>
+  dplyr::select(-error) |>
+  #dplyr::select(-squared_error) |> # comment this line to add squared error
+  #group_by(proposal) |>
+  reshape2::melt(id.vars = c("proposal", "snis"), variable.name = "metric") |>
+  group_by(proposal, snis, metric) |>
   summarise(mean_metric = mean(value),
             sd_metic = sd(value),
             lower_metric = quantile(value, prob = 0.05),
             upper_metric = quantile(value, prob = 0.95)) |>
-  ggplot(aes(y = mean_metric, x = proposal)) +
+  ggplot(aes(y = mean_metric, x = proposal, colour = snis)) +
   geom_pointrange(aes(ymin = lower_metric, 
                       ymax = upper_metric),
                   size = 0.4,
                   shape = 1) +
-  facet_wrap(~metric, scales = "free") +
+  facet_wrap(~metric, scales = "free", labeller = as_labeller(metric_names)) +
   ylab(NULL) +
   xlab(NULL) +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))
+  scale_y_log10() +
+  scale_colour_manual(values = c("black", "red")) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1),
+        legend.position = "none")
 p_proposal_metrics
-save_tikz_plot(p_proposal_metrics, width = 4, 
-               filename = "./tex/linear-nnn-proposals.tex")
+#save_tikz_plot(p_proposal_metrics, width = 5, 
+#               filename = "./tex/linear-nnn-proposals.tex")
