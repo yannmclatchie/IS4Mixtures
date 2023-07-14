@@ -37,6 +37,8 @@ p_locking_target <- ggplot() +
   xlab(NULL) + 
   ylab(NULL)
 p_locking_target
+#save_tikz_plot(p_locking_target, width = 4, 
+#               filename = "./tex/locking-nnn-target.tex")
 
 # evaluate all proposals on locking target
 N1_proposal_res <- 1:num_iters |>
