@@ -7,3 +7,10 @@ my_theme <- (theme_bw() +
 
 # set ggplot theme
 theme_set(my_theme)
+
+# custom labeller
+metric_names <- c(
+  `var` = "Variance",
+  `ess` = "ESS",
+  `squared_error` = "Squared error"
+)

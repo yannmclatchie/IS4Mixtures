@@ -71,22 +71,15 @@ aware_proposal_res <- 1:num_iters |>
                                   I.quad = I.quad$value, 
                                   functional = functional)) |> 
   bind_rows()
-res_df <- bind_rows(N1_proposal_res,
-                    N2_proposal_res,
-                    N3_proposal_res,
-                    complete_proposal_res,
-                    aware_proposal_res)
-res_df
-
-# custom labeller
-metric_names <- c(
-  `var` = "Variance",
-  `ess` = "ESS",
-  `squared_error` = "Squared error"
-)
+linear_res_df <- bind_rows(N1_proposal_res,
+                           N2_proposal_res,
+                           N3_proposal_res,
+                           complete_proposal_res,
+                           aware_proposal_res)
+linear_res_df
 
 # plot the proposal performances on linear target
-p_proposal_metrics <- res_df |> dplyr::select(proposal, snis, error, var, ess) |>
+p_linear_metrics <- linear_res_df |> dplyr::select(proposal, snis, error, var, ess) |>
   mutate(squared_error = error^2) |>
   dplyr::select(-error) |>
   #dplyr::select(-squared_error) |> # uncomment this line to remove squared error
@@ -109,6 +102,6 @@ p_proposal_metrics <- res_df |> dplyr::select(proposal, snis, error, var, ess) |
   scale_colour_manual(values = c("black", "red")) +
   theme(axis.text.x = element_text(angle = 45, hjust=1),
         legend.position = "none")
-p_proposal_metrics
-#save_tikz_plot(p_proposal_metrics, width = 5, 
+p_linear_metrics
+#save_tikz_plot(p_linear_metrics, width = 5, 
 #               filename = "./tex/linear-nnn-proposals.tex")
