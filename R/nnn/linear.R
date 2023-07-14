@@ -89,8 +89,7 @@ metric_names <- c(
 p_proposal_metrics <- res_df |> dplyr::select(proposal, snis, error, var, ess) |>
   mutate(squared_error = error^2) |>
   dplyr::select(-error) |>
-  #dplyr::select(-squared_error) |> # comment this line to add squared error
-  #group_by(proposal) |>
+  #dplyr::select(-squared_error) |> # uncomment this line to remove squared error
   reshape2::melt(id.vars = c("proposal", "snis"), variable.name = "metric") |>
   group_by(proposal, snis, metric) |>
   summarise(mean_metric = mean(value),
@@ -101,7 +100,8 @@ p_proposal_metrics <- res_df |> dplyr::select(proposal, snis, error, var, ess) |
   geom_pointrange(aes(ymin = lower_metric, 
                       ymax = upper_metric),
                   size = 0.4,
-                  shape = 1) +
+                  shape = 1,
+                  position = position_dodge(width = 0.4)) +
   facet_wrap(~metric, scales = "free", labeller = as_labeller(metric_names)) +
   ylab(NULL) +
   xlab(NULL) +
