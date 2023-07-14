@@ -10,22 +10,18 @@ source("R/nnn/proposals.R")
 source("R/nnn/targets.R")
 source("R/nnn/ggtheme.R")
 
-# compute the normalising constant of the target distribution
-Z <- integrate(linear_kernel, -Inf, Inf, weights = weights)
-lZ <- log(Z$value)
-
 # define some functional to estimate
 functional <- function(x) sin(x) * cos(x)
 functional <- Vectorize(functional)
 I.quad <- integrate(function(x){
-  functional(x) * target_dens(x, weights = weights, lZ = lZ)},
-  -Inf, Inf, rel.tol = 1e-15) 
+  functional(x) * linear_dens(x, weights = weights)},
+  -Inf, Inf) 
 I.quad$value # should be zero since functional is odd
 
 # plot the (known) target and the component models
-p <- ggplot() +
+p_linear_target <- ggplot() +
   geom_function(fun = linear_dens,
-                args = list(weights = weights, lZ = lZ)) + 
+                args = list(weights = weights)) + 
   geom_density(
     data = data.frame(x = N1_samples), aes(x),
     fill = "grey20", colour = NA, alpha = 0.1
@@ -37,8 +33,12 @@ p <- ggplot() +
   geom_density(
     data = data.frame(x = N3_samples), aes(x),
     fill = "grey20", colour = NA, alpha = 0.1
-  )
-p
+  ) +
+  xlab(NULL) + 
+  ylab(NULL)
+p_linear_target
+#save_tikz_plot(p_linear_target, width = 4,
+#               filename = "./tex/linear-nnn-target.tex")
 
 # evaluate all proposals on linear target
 N1_proposal_res <- 1:num_iters |>
