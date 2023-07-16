@@ -14,14 +14,17 @@ source("R/nnn/ggtheme.R")
 functional <- function(x) sin(x) * cos(x)
 functional <- Vectorize(functional)
 I.quad <- integrate(function(x){
-  functional(x) * linear_dens(x, weights = weights)},
+  functional(x) * quacking_dens(x, weights = weights,
+                                w0 = w0, betas = betas)},
   -Inf, Inf) 
 I.quad$value # should be zero since functional is odd
 
 # plot the (known) target and the component models
-p_linear_target <- ggplot() +
-  geom_function(fun = linear_dens,
-                args = list(weights = weights)) + 
+p_quacking_target <- ggplot() +
+  geom_function(fun = quacking_dens,
+                args = list(weights = weights,
+                            w0 = w0,
+                            betas = betas)) + 
   geom_density(
     data = data.frame(x = N1_samples), aes(x),
     fill = "grey20", colour = NA, alpha = 0.1
@@ -36,51 +39,50 @@ p_linear_target <- ggplot() +
   ) +
   xlab(NULL) + 
   ylab(NULL)
-p_linear_target
-#save_tikz_plot(p_linear_target, width = 4,
-#               filename = "./tex/linear-nnn-target.tex")
+p_quacking_target
+#save_tikz_plot(p_quacking_target, width = 4, 
+#               filename = "./tex/quacking-nnn-target.tex")
 
-# evaluate all proposals on linear target
+# evaluate all proposals on locking target
 N1_proposal_res <- 1:num_iters |>
-  map(\(rep_id) rep_eval_proposal(rep_id, target = linear_target, 
+  map(\(rep_id) rep_eval_proposal(rep_id, target = quacking_target, 
                                   proposal = N1_proposal, 
                                   I.quad = I.quad$value, 
-                                  functional = functional,
-                                  self_norm = FALSE)) |> 
+                                  functional = functional)) |> 
   bind_rows()
 N2_proposal_res <- 1:num_iters |>
-  map(\(rep_id) rep_eval_proposal(rep_id, target = linear_target, 
+  map(\(rep_id) rep_eval_proposal(rep_id, target = quacking_target, 
                                   proposal = N2_proposal, 
                                   I.quad = I.quad$value, 
                                   functional = functional)) |> 
   bind_rows()
 N3_proposal_res <- 1:num_iters |>
-  map(\(rep_id) rep_eval_proposal(rep_id, target = linear_target, 
+  map(\(rep_id) rep_eval_proposal(rep_id, target = quacking_target, 
                                   proposal = N3_proposal, 
                                   I.quad = I.quad$value, 
                                   functional = functional)) |> 
   bind_rows()
 complete_proposal_res <- 1:num_iters |>
-  map(\(rep_id) rep_eval_proposal(rep_id, target = linear_target, 
+  map(\(rep_id) rep_eval_proposal(rep_id, target = quacking_target, 
                                   proposal = complete_proposal, 
                                   I.quad = I.quad$value, 
                                   functional = functional)) |> 
   bind_rows()
 aware_proposal_res <- 1:num_iters |>
-  map(\(rep_id) rep_eval_proposal(rep_id, target = linear_target, 
+  map(\(rep_id) rep_eval_proposal(rep_id, target = quacking_target, 
                                   proposal = aware_proposal, 
                                   I.quad = I.quad$value, 
                                   functional = functional)) |> 
   bind_rows()
-linear_res_df <- bind_rows(N1_proposal_res,
-                           N2_proposal_res,
-                           N3_proposal_res,
-                           complete_proposal_res,
-                           aware_proposal_res)
-linear_res_df
+quacking_res_df <- bind_rows(N1_proposal_res,
+                            N2_proposal_res,
+                            N3_proposal_res,
+                            complete_proposal_res,
+                            aware_proposal_res)
+quacking_res_df
 
 # plot the proposal performances on linear target
-p_linear_metrics <- linear_res_df |> dplyr::select(proposal, snis, error, var, ess) |>
+p_quacking_metrics <- quacking_res_df |> dplyr::select(proposal, snis, error, var, ess) |>
   mutate(squared_error = error^2) |>
   dplyr::select(-error) |>
   #dplyr::select(-squared_error) |> # uncomment this line to remove squared error
@@ -103,6 +105,7 @@ p_linear_metrics <- linear_res_df |> dplyr::select(proposal, snis, error, var, e
   scale_colour_manual(values = c("black", "red")) +
   theme(axis.text.x = element_text(angle = 45, hjust=1),
         legend.position = "none")
-p_linear_metrics
-#save_tikz_plot(p_linear_metrics, width = 5, 
-#               filename = "./tex/linear-nnn-proposals.tex")
+p_quacking_metrics
+#save_tikz_plot(p_quacking_metrics, width = 5, 
+#               filename = "./tex/quacking-nnn-proposals.tex")
+

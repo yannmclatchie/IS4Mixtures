@@ -1,5 +1,6 @@
 # evaluate a given proposal for a target
-eval_proposal <- function(rep_id, target, proposal, all_draws, I.quad, functional) {
+eval_proposal <- function(rep_id, target, proposal, all_draws, 
+                          I.quad, functional, self_norm) {
   # unpack inputs
   target_kernel <- target$kernel
   target_log_kernel <- target$log_kernel
@@ -17,36 +18,47 @@ eval_proposal <- function(rep_id, target, proposal, all_draws, I.quad, functiona
                              ndraws = num_draws)
   
   # compute the normalising constant of the target distribution
-  Z <- integrate(target_kernel, -Inf, Inf, weights = weights)
+  Z <- integrate(target_kernel, -Inf, Inf, weights = weights, w0 = w0, betas = betas)
   lZ <- log(Z$value)
   
   # compute the importance ratios from the resampled draws
-  lws_u <- (target_log_dens(draws_rs$x, weights = weights) 
+  lws_u <- (target_log_dens(draws_rs$x, weights = weights, 
+                            w0 = w0, betas = betas) 
             - proposal_log_dens(draws_rs$x, 
                                 mu_1 = mu_1, sigma_1 = sigma_1, 
                                 mu_2 = mu_2, sigma_2 = sigma_2, 
                                 mu_3 = mu_3, sigma_3 = sigma_3))
   ws_u <- exp(lws_u)
   
-  # and the SNIS importance ratios
-  lws_sn_u <- (target_log_kernel(draws_rs$x, weights = weights) 
-               - proposal_log_kernel(draws_rs$x, 
-                                  mu_1 = mu_1, sigma_1 = sigma_1, 
-                                  mu_2 = mu_2, sigma_2 = sigma_2, 
-                                  mu_3 = mu_3, sigma_3 = sigma_3))
-  ws_sn_u <- exp(lws_sn_u)
+  # compute the proposal metrics
+  res <- proposal_metrics(proposal_name, functional, I.quad, draws, ws_u)
+  res$rep <- rep_id
   
-  # output the proposal metrics
-  snis_res <- proposal_metrics_sn(proposal_name, functional, I.quad, draws, ws_u)
-  snis_res$rep <- rep_id
-  is_res <- proposal_metrics(proposal_name, functional, I.quad, draws, ws_u)
-  is_res$rep <- rep_id
-  res <- list(snis_res, is_res)
+  if (self_norm) {
+    # and the SNIS importance ratios
+    lws_sn_u <- (target_log_kernel(draws_rs$x, weights = weights,
+                                   w0 = w0, betas = betas) 
+                 - proposal_log_kernel(draws_rs$x, 
+                                       mu_1 = mu_1, sigma_1 = sigma_1, 
+                                       mu_2 = mu_2, sigma_2 = sigma_2, 
+                                       mu_3 = mu_3, sigma_3 = sigma_3))
+    ws_sn_u <- exp(lws_sn_u)
+    
+    # append SNIS metrics 
+    snis_res <- proposal_metrics_sn(proposal_name, functional, I.quad, draws, ws_u)
+    snis_res$rep <- rep_id
+    
+    res <- list(snis_res, res)
+  }
+  
+  # return proposal metrics
+  return(res)
 }
 
 # simulate the evalution for one iteration 
 rep_eval_proposal <- function(rep_id, target, proposal, 
-                              all_draws, I.quad, functional) {
+                              all_draws, I.quad, functional,
+                              self_norm = TRUE) {
   # produce samples from the components
   # use the rep_id as the seed for reproducibility
   N1_samples <- withr::with_seed(rep_id, rnorm(num_draws, mu_1, sigma_1))
@@ -57,7 +69,8 @@ rep_eval_proposal <- function(rep_id, target, proposal,
   all_draws <- as_draws_df(list(x = c(N1_samples, N2_samples, N3_samples)))
   
   # evaluate 
-  out <- eval_proposal(rep_id, target, proposal, all_draws, I.quad, functional)
+  out <- eval_proposal(rep_id, target, proposal, all_draws, I.quad, 
+                       functional, self_norm)
   return(out)
 }
 

@@ -22,3 +22,10 @@ w1 + w2 + w3
 
 # build weights list
 weights <- list(w1 = w1, w2 = w2, w3 = w3)
+
+# define quacking-specific parameters
+w0 <- 0.5
+b1 <- 0.6
+b2 <- 0.0
+b3 <- 0.4
+betas <- list(b1 = b1, b2 = b2, b3 = b3)
