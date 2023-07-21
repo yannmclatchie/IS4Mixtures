@@ -31,7 +31,7 @@ eval_proposal <- function(rep_id, target, proposal, all_draws,
   ws_u <- exp(lws_u)
   
   # compute the proposal metrics
-  res <- proposal_metrics(proposal_name, functional, I.quad, draws, ws_u)
+  res <- proposal_metrics(proposal_name, functional, I.quad, all_draws, ws_u)
   res$rep <- rep_id
   
   if (self_norm) {
@@ -45,7 +45,7 @@ eval_proposal <- function(rep_id, target, proposal, all_draws,
     ws_sn_u <- exp(lws_sn_u)
     
     # append SNIS metrics 
-    snis_res <- proposal_metrics_sn(proposal_name, functional, I.quad, draws, ws_u)
+    snis_res <- proposal_metrics_sn(proposal_name, functional, I.quad, all_draws, ws_u)
     snis_res$rep <- rep_id
     
     res <- list(snis_res, res)
@@ -103,14 +103,19 @@ proposal_metrics_sn <- function(proposal_name, functional, I.quad,
   # compute the quartiles corresponding to the level
   D <- qnorm(p = (1 + level) / 2)
   d <- D * sqrt(var)
+  lwr <- mean - d
+  upr <- mean + d
+  # add coverage
+  covers <- is_in(I.quad, lwr, upr)
   # return the metrics
   list(proposal = proposal_name,
        snis = "true",
        est = mean,
        var = var,
        error = error,
-       lwr = mean - d,
-       upr = mean + d,
+       covers = covers,
+       lwr = lwr,
+       upr = upr,
        ess = ess)
 }
 proposal_metrics <- function(proposal_name, functional, I.quad,
@@ -127,14 +132,19 @@ proposal_metrics <- function(proposal_name, functional, I.quad,
   # compute the quartiles corresponding to the level
   D <- qnorm(p = (1 + level) / 2)
   d <- D * sqrt(var)
+  lwr <- mean - d
+  upr <- mean + d
+  # add coverage
+  covers <- is_in(I.quad, lwr, upr)
   # return the metrics
   list(proposal = proposal_name,
        snis = "false",
        est = mean,
        var = var,
        error = error,
-       lwr = mean - d,
-       upr = mean + d,
+       covers = covers,
+       lwr = lwr,
+       upr = upr,
        ess = ess)
 }
 

@@ -12,5 +12,6 @@ theme_set(my_theme)
 metric_names <- c(
   `var` = "Variance",
   `ess` = "ESS",
-  `squared_error` = "Squared error"
+  `squared_error` = "Squared error",
+  `est` = "Estimate"
 )

@@ -2,6 +2,9 @@
 SEED <- 1234
 set.seed(SEED)
 
+# whether or not to compute SNIS for comparison
+compute_self_norm <- TRUE
+
 # define the number of draws (use default Stan)
 num_draws <- 4e3
 num_iters <- 500

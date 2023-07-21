@@ -14,7 +14,12 @@ source("R/nnn/ggtheme.R")
 I.quad <- integrate(function(x){
   functional(x) * linear_dens(x, weights = weights)},
   -Inf, Inf) 
-I.quad$value # should be zero since functional is odd
+I.quad$value
+
+# sample some example samples
+N1_samples <- withr::with_seed(SEED, rnorm(num_draws, mu_1, sigma_1))
+N2_samples <- withr::with_seed(SEED, rnorm(num_draws, mu_2, sigma_2))
+N3_samples <- withr::with_seed(SEED, rnorm(num_draws, mu_3, sigma_3))
 
 # plot the (known) target and the component models
 p_linear_target <- ggplot() +
@@ -35,7 +40,7 @@ p_linear_target <- ggplot() +
   xlab(NULL) + 
   ylab(NULL)
 p_linear_target
-#save_tikz_plot(p_linear_target, width = 4,
+#save_tikz_plot(p_linear_target, width = 3, 
 #               filename = "./tex/linear-nnn-target.tex")
 
 # evaluate all proposals on linear target
@@ -44,44 +49,44 @@ N1_proposal_res <- 1:num_iters |>
                                   proposal = N1_proposal, 
                                   I.quad = I.quad$value, 
                                   functional = functional,
-                                  self_norm = FALSE)) |> 
+                                  self_norm = compute_self_norm)) |> 
   bind_rows()
 N2_proposal_res <- 1:num_iters |>
   map(\(rep_id) rep_eval_proposal(rep_id, target = linear_target, 
                                   proposal = N2_proposal, 
                                   I.quad = I.quad$value, 
-                                  functional = functional)) |> 
+                                  functional = functional,
+                                  self_norm = compute_self_norm)) |> 
   bind_rows()
 N3_proposal_res <- 1:num_iters |>
   map(\(rep_id) rep_eval_proposal(rep_id, target = linear_target, 
                                   proposal = N3_proposal, 
                                   I.quad = I.quad$value, 
-                                  functional = functional)) |> 
+                                  functional = functional,
+                                  self_norm = compute_self_norm)) |> 
   bind_rows()
 complete_proposal_res <- 1:num_iters |>
   map(\(rep_id) rep_eval_proposal(rep_id, target = linear_target, 
                                   proposal = complete_proposal, 
                                   I.quad = I.quad$value, 
-                                  functional = functional)) |> 
+                                  functional = functional,
+                                  self_norm = compute_self_norm)) |> 
   bind_rows()
 aware_proposal_res <- 1:num_iters |>
   map(\(rep_id) rep_eval_proposal(rep_id, target = linear_target, 
                                   proposal = aware_proposal, 
                                   I.quad = I.quad$value, 
-                                  functional = functional)) |> 
+                                  functional = functional,
+                                  self_norm = compute_self_norm)) |> 
   bind_rows()
 linear_res_df <- bind_rows(N1_proposal_res,
                            N2_proposal_res,
                            N3_proposal_res,
                            complete_proposal_res,
                            aware_proposal_res)
-linear_res_df
 
 # plot the proposal performances on linear target
-p_linear_metrics <- linear_res_df |> dplyr::select(proposal, snis, error, var, ess) |>
-  mutate(squared_error = error^2) |>
-  dplyr::select(-error) |>
-  #dplyr::select(-squared_error) |> # uncomment this line to remove squared error
+p_linear_metrics <- linear_res_df |> dplyr::select(proposal, snis, ess, est) |>
   reshape2::melt(id.vars = c("proposal", "snis"), variable.name = "metric") |>
   group_by(proposal, snis, metric) |>
   summarise(mean_metric = mean(value),

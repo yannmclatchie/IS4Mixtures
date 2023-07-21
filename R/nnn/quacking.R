@@ -15,7 +15,7 @@ I.quad <- integrate(function(x){
   functional(x) * quacking_dens(x, weights = weights,
                                 w0 = w0, betas = betas)},
   -Inf, Inf) 
-I.quad$value # should be zero since functional is odd
+I.quad$value
 
 # plot the (known) target and the component models
 p_quacking_target <- ggplot() +
@@ -38,7 +38,7 @@ p_quacking_target <- ggplot() +
   xlab(NULL) + 
   ylab(NULL)
 p_quacking_target
-#save_tikz_plot(p_quacking_target, width = 4, 
+#save_tikz_plot(p_quacking_target, width = 3, 
 #               filename = "./tex/quacking-nnn-target.tex")
 
 # evaluate all proposals on locking target

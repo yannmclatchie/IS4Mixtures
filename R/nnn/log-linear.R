@@ -14,7 +14,7 @@ source("R/nnn/ggtheme.R")
 I.quad <- integrate(function(x){
   functional(x) * locking_dens(x, weights = weights)},
   -Inf, Inf) 
-I.quad$value # should be zero since functional is odd
+I.quad$value
 
 # plot the (known) target and the component models
 p_locking_target <- ggplot() +
@@ -35,7 +35,7 @@ p_locking_target <- ggplot() +
   xlab(NULL) + 
   ylab(NULL)
 p_locking_target
-#save_tikz_plot(p_locking_target, width = 4, 
+#save_tikz_plot(p_locking_target, width = 3, 
 #               filename = "./tex/locking-nnn-target.tex")
 
 # evaluate all proposals on locking target
