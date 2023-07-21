@@ -10,9 +10,7 @@ source("R/nnn/proposals.R")
 source("R/nnn/targets.R")
 source("R/nnn/ggtheme.R")
 
-# define some functional to estimate
-functional <- function(x) sin(x) * cos(x)
-functional <- Vectorize(functional)
+# estimate the functional under the quacked kernel
 I.quad <- integrate(function(x){
   functional(x) * quacking_dens(x, weights = weights,
                                 w0 = w0, betas = betas)},

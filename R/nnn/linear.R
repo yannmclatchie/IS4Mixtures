@@ -10,9 +10,7 @@ source("R/nnn/proposals.R")
 source("R/nnn/targets.R")
 source("R/nnn/ggtheme.R")
 
-# define some functional to estimate
-functional <- function(x) sin(x) * cos(x)
-functional <- Vectorize(functional)
+# estimate the functional under the linear kernel
 I.quad <- integrate(function(x){
   functional(x) * linear_dens(x, weights = weights)},
   -Inf, Inf) 
