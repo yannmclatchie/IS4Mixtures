@@ -2,6 +2,7 @@ library(ggplot2)
 library(tidyverse)
 library(posterior)
 library(bayesflow)
+library(gt)
 
 # load utility functions
 source("R/nnn/config.R")
@@ -109,3 +110,27 @@ p_linear_metrics <- linear_res_df |> dplyr::select(proposal, snis, ess, est) |>
 p_linear_metrics
 #save_tikz_plot(p_linear_metrics, width = 5, 
 #               filename = "./tex/linear-nnn-proposals.tex")
+
+# produce LaTeX table
+linear_res_df |> dplyr::select(proposal, snis, var, error, covers) |>
+  mutate_at(.cols= vars(snis),
+            .funs = funs(recode(., 'true' = 'SNIS', 'false' = 'Raw IS'))) |> 
+  group_by(snis, proposal) |>
+  summarise(bias = mean(error),
+            variance = mean(var),
+            coverage = mean(covers)) |>
+  gt() |>
+  fmt_number(
+    columns = c(bias, coverage),
+    decimals = 2
+  ) |>
+  fmt_scientific(
+    columns = variance,
+    decimals = 2
+  ) |>
+  cols_label(
+    proposal = "Proposal",
+    bias = "Bias",
+    variance = "Variance",
+    coverage = "Coverage"
+  ) #|> gtsave("linear-tab.tex")
