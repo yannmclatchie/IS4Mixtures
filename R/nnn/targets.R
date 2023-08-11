@@ -1,14 +1,15 @@
 # linear stacking
-linear_kernel <- function(x, weights, ...) {
-  (weights$w1 * dnorm(x, mu_1, sigma_1) 
-   + weights$w2 * dnorm(x, mu_2, sigma_2)
-   + weights$w3 * dnorm(x, mu_3, sigma_3))
-}
 linear_log_kernel <- function(x, weights, ...) {
-  log(linear_kernel(x, weights))
+  logSumExp(c(log(weights$w1) + dnorm(x, mu_1, sigma_1, log = TRUE),
+              log(weights$w2) + dnorm(x, mu_2, sigma_2, log = TRUE),
+              log(weights$w3) + dnorm(x, mu_3, sigma_3, log = TRUE)))
 }
-linear_Z <- integrate(linear_kernel, -Inf, Inf, weights = weights)
-linear_lZ <- log(linear_Z$value)
+linear_log_kernel <- Vectorize(linear_log_kernel, vectorize.args = "x")
+linear_kernel <- function(x, weights, ...) {
+  exp(linear_log_kernel(x, weights))
+}
+linear_Z <- 1
+linear_lZ <- 0
 linear_log_dens <- function(x, weights, ...) {
   linear_log_kernel(x = x, weights = weights) - linear_lZ
 }

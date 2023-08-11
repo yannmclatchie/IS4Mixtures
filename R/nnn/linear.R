@@ -1,4 +1,5 @@
 library(ggplot2)
+library(matrixStats)
 library(tidyverse)
 library(posterior)
 library(bayesflow)
@@ -24,7 +25,7 @@ N3_samples <- withr::with_seed(SEED, rnorm(num_draws, mu_3, sigma_3))
 
 # plot the (known) target and the component models
 p_linear_target <- ggplot() +
-  geom_function(fun = linear_dens,
+  geom_function(fun = linear_kernel,
                 args = list(weights = weights)) + 
   geom_density(
     data = data.frame(x = N1_samples), aes(x),
@@ -120,11 +121,11 @@ linear_res_df |> dplyr::select(proposal, snis, var, error, covers) |>
             Variance = mean(var),
             Coverage = mean(covers)) |>
   gt() |>
-  fmt_number(
-    columns = c(Bias, Coverage),
-    decimals = 2
-  ) |>
-  fmt_scientific(
-    columns = Variance,
-    decimals = 2
-  ) |> cols_label(proposal = "Proposal") #|> gtsave("linear-tab.tex")
+  fmt_number(columns = c(Bias, Coverage),
+             decimals = 2) |>
+  fmt_scientific(columns = Variance,
+                 decimals = 2) |> 
+  cols_label(proposal = "Proposal") |>
+  tab_options(column_labels.font.weight = "bold") |>
+  tab_style(style = cell_text(style = "italic"),
+            locations = cells_row_groups()) #|> gtsave("linear-tab.tex")

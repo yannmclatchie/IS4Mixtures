@@ -16,7 +16,7 @@ eval_proposal <- function(rep_id, target, proposal, all_draws,
                              weights = proposal_sampling_weights,
                              method = "simple_no_replace",
                              ndraws = num_draws)
-  
+
   # compute the normalising constant of the target distribution
   Z <- integrate(target_kernel, -Inf, Inf, weights = weights, w0 = w0, betas = betas)
   lZ <- log(Z$value)
@@ -31,7 +31,7 @@ eval_proposal <- function(rep_id, target, proposal, all_draws,
   ws_u <- exp(lws_u)
   
   # compute the proposal metrics
-  res <- proposal_metrics(proposal_name, functional, I.quad, all_draws, ws_u)
+  res <- proposal_metrics(proposal_name, functional, I.quad, draws_rs$x, ws_u)
   res$rep <- rep_id
   
   if (self_norm) {
@@ -45,7 +45,7 @@ eval_proposal <- function(rep_id, target, proposal, all_draws,
     ws_sn_u <- exp(lws_sn_u)
     
     # append SNIS metrics 
-    snis_res <- proposal_metrics_sn(proposal_name, functional, I.quad, all_draws, ws_u)
+    snis_res <- proposal_metrics_sn(proposal_name, functional, I.quad, draws_rs$x, ws_u)
     snis_res$rep <- rep_id
     
     res <- list(snis_res, res)
@@ -97,20 +97,20 @@ proposal_metrics_sn <- function(proposal_name, functional, I.quad,
   fs <- functional(draws)
   # compute the ESS, mean, and variance of the IS estimate
   ess <- ess_IS(ws)
-  mean <-  sum(fs * ws)
-  var <- sum(ws^2 * (fs - mean)^2)
-  error <- I.quad - mean
+  est <- sum(fs * ws)
+  var <- sum(ws^2 * (fs - est)^2)
+  error <- I.quad - est
   # compute the quartiles corresponding to the level
   D <- qnorm(p = (1 + level) / 2)
   d <- D * sqrt(var)
-  lwr <- mean - d
-  upr <- mean + d
+  lwr <- est - d
+  upr <- est + d
   # add coverage
   covers <- is_in(I.quad, lwr, upr)
   # return the metrics
   list(proposal = proposal_name,
        snis = "true",
-       est = mean,
+       est = est,
        var = var,
        error = error,
        covers = covers,
@@ -119,27 +119,26 @@ proposal_metrics_sn <- function(proposal_name, functional, I.quad,
        ess = ess)
 }
 proposal_metrics <- function(proposal_name, functional, I.quad,
-                             draws, ws_u, level = .95) {
-  # normalise the (un-normalised) weights
-  ws <- ws_u / sum(ws_u)
+                             draws, ws, level = .95) {
+  ws <- ws / length(draws)
   # compute the functional at the sampled draws
   fs <- functional(draws)
   # compute the ESS, mean, and variance of the IS estimate
   ess <- ess_IS(ws)
-  mean <-  mean(fs * ws)
-  var <- mean(ws^2 * (fs - mean)^2)
-  error <- I.quad - mean
+  est <- sum(fs * ws)
+  var <- sum(ws^2 * (fs - est)^2)
+  error <- I.quad - est
   # compute the quartiles corresponding to the level
   D <- qnorm(p = (1 + level) / 2)
   d <- D * sqrt(var)
-  lwr <- mean - d
-  upr <- mean + d
+  lwr <- est - d
+  upr <- est + d
   # add coverage
   covers <- is_in(I.quad, lwr, upr)
   # return the metrics
   list(proposal = proposal_name,
        snis = "false",
-       est = mean,
+       est = est,
        var = var,
        error = error,
        covers = covers,
@@ -147,4 +146,3 @@ proposal_metrics <- function(proposal_name, functional, I.quad,
        upr = upr,
        ess = ess)
 }
-

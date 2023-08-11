@@ -7,7 +7,7 @@ compute_self_norm <- TRUE
 
 # define the number of draws (use default Stan)
 num_draws <- 4e3
-num_iters <- 500
+num_iters <- 50
 
 # define the components
 mu_1 <- 20
