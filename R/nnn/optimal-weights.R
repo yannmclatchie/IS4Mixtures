@@ -9,7 +9,6 @@ optimal_weights <- function(m_k, v_k, alpha_k) {
   
   # reparameterisations
   a_k <- (2 * v_k - v_ast) / (2 * v_ast * v_k)
-  print(a_k)    ## negative values being introduced here
   b_k <- (2 * v_k * m_ast - v_ast * m_k) / (2 * v_ast * v_k)
   c_k <- (2 * v_k * m_ast^2 - v_ast * m_k^2) / (2 * v_ast * v_k)
 
@@ -22,6 +21,18 @@ optimal_weights <- function(m_k, v_k, alpha_k) {
   W <- sum(1 / sigma2_k)
   return(1 / (W * sigma2_k))
 }
+
+## Scenario 1: all components are useful
+
+# define the experiment 
+m_k <- c(0, 1, 2)
+v_k <- c(1, 1, 1)
+alpha_k <- c(w1, w2, w3)
+
+# compute the optimal weights
+optimal_weights(m_k, v_k, alpha_k)
+
+## Scenario 2: some of the components produce non-finite integrals
 
 # define the experiment 
 m_k <- c(mu_1, mu_2, mu_3)
